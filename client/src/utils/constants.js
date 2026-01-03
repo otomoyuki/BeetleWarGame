@@ -171,7 +171,7 @@ export const getSGReward = (difficulty, result) => {
  * SG報酬（旧版：互換性のため残す）
  */
 export const SG_REWARDS = {
-  WIN: 10,
+  WIN: 10000000,
   DRAW: 5,
   LOSE: 3,
 };
