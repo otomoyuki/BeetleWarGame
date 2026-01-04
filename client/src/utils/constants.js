@@ -91,7 +91,7 @@ export const DIFFICULTY_MODES = [
     id: 1, 
     name: '初級', 
     cpuBonus: 0,
-    reward: { win: 10, draw: 5, lose: 3 },
+    reward: { win: 10000000, draw: 5, lose: 3 },
     description: '初心者向け'
   },
   { 
@@ -171,7 +171,7 @@ export const getSGReward = (difficulty, result) => {
  * SG報酬（旧版：互換性のため残す）
  */
 export const SG_REWARDS = {
-  WIN: 10000000,
+  WIN: 10,
   DRAW: 5,
   LOSE: 3,
 };
