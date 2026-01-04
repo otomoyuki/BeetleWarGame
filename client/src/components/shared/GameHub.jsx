@@ -4,8 +4,18 @@ import React from 'react';
 
 const GameHub = ({ onSelectGame }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 p-8 relative">
+      {/* ⬇️⬇️⬇️ 戻るボタン（追加） ⬇️⬇️⬇️ */}
+      <a
+        href="https://semanticgrove.onrender.com/games"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 hover:from-purple-700 hover:to-indigo-700"
+      >
+        <span className="text-xl">←</span>
+        <span>SemanticFieldに戻る</span>
+      </a>
+      {/* ⬆️⬆️⬆️ 戻るボタン（追加終わり） ⬆️⬆️⬆️ */}
+
+      <div className="max-w-6xl mx-auto pt-8">
         <h1 className="text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-pink-400">
           🎮 SemanticField ゲーム広場
         </h1>
@@ -54,13 +64,13 @@ const GameHub = ({ onSelectGame }) => {
             </div>
           </button>
 
-          {/* 凧あげ（Coming Soon） */}
+          {/* 凧揚げ（Coming Soon） */}
           <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border-2 border-gray-600 opacity-60 cursor-not-allowed relative">
             <div className="absolute top-2 right-2 bg-gray-500 text-white px-3 py-1 rounded-full text-xs font-bold">
               Coming Soon
             </div>
             <div className="text-6xl mb-4 text-center">🪁</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">凧あげ競争</h2>
+            <h2 className="text-3xl font-bold text-white mb-4 text-center">凧揚げ競争</h2>
             <p className="text-gray-300 mb-4">
               問題に正解して凧を上昇させよう！<br/>
               最高記録を目指してランキング上位を狙え。
