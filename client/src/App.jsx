@@ -8,9 +8,19 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* ゲーム選択画面 */}
+      {/* ゲーム選択画面（ホーム） */}
       {currentGame === 'home' && (
-        <div className="min-h-screen flex flex-col items-center justify-center p-8">
+        <div className="min-h-screen flex flex-col items-center justify-center p-8 relative">
+          {/* ⬇️⬇️⬇️ 追加：SemanticFieldに戻るボタン ⬇️⬇️⬇️ */}
+          <a
+            href="https://semanticgrove.onrender.com/games"
+            className="fixed top-4 left-4 z-50 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+          >
+            <span className="text-xl">←</span>
+            <span>SemanticFieldに戻る</span>
+          </a>
+          {/* ⬆️⬆️⬆️ 追加終わり ⬆️⬆️⬆️ */}
+
           <h1 className="text-6xl font-bold text-white mb-12">
             🎮 SemanticGrove ゲーム広場 🎮
           </h1>
