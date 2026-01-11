@@ -4,25 +4,25 @@
  * 甲虫の種類定義
  */
 export const beetleTypes = {
-  // 1段（ノーマル）- 87.2%
+  // 1段（ノーマル）- 79.3%
   kanabun: {
     name: 'カナブン',
     rarity: 1,
     hp: 20,
     atk: 5,
     def: 3,
-    carry: 1,
+    carry: 2,
     speed: 0.4,
     count: 6,
     cost: 10,
     color: '#2E8B57',
     size: 10,
-    imageScale: 1.0,
+    imageScale: 1.1,
     gachaRate: 0.872,
     purchasePrice: null,
   },
   
-  // 2段（レア）- 10%
+  // 2段（レア）- 15%
   japanese: {
     name: 'カブトムシ',
     rarity: 2,
@@ -30,12 +30,12 @@ export const beetleTypes = {
     atk: 15,
     def: 10,
     carry: 2,
-    speed: 0.3,
+    speed: 0.35,
     count: 3,
     cost: 20,
     color: '#654321',
     size: 13,
-    imageScale: 1.3,
+    imageScale: 1.35,
     gachaRate: 0.034,
     purchasePrice: 20000,
   },
@@ -51,7 +51,7 @@ export const beetleTypes = {
     cost: 22,
     color: '#6B4423',
     size: 13,
-    imageScale: 1.35,
+    imageScale: 1.4,
     gachaRate: 0.033,
     purchasePrice: 20000,
   },
@@ -72,7 +72,7 @@ export const beetleTypes = {
     purchasePrice: 20000,
   },
   
-  // 3段（高レア）- 2%
+  // 3段（高レア）- 4%
   atlas: {
     name: 'アトラス',
     rarity: 3,
@@ -101,7 +101,7 @@ export const beetleTypes = {
     cost: 29,
     color: '#2C1810',
     size: 15,
-    imageScale: 1.6,
+    imageScale: 1.55,
     gachaRate: 0.005,
     purchasePrice: 50000,
   },
@@ -138,7 +138,7 @@ export const beetleTypes = {
     purchasePrice: 50000,
   },
   
-  // 4段（最高レア）- 0.5%
+  // 4段（最高レア）- 1%
   hercules: {
     name: 'ヘラクレス',
     rarity: 4,
@@ -204,7 +204,7 @@ export const beetleTypes = {
     purchasePrice: 200000,
   },
   
-  // 5段（特別）- 0.2%
+  // 5段（特別）- 0.4%
   kinghercules: {
     name: 'キングヘラクレス',
     rarity: 5,
@@ -242,19 +242,19 @@ export const beetleTypes = {
     rarity: 5,
     hp: 30,
     atk: 8,
-    def: 4,
-    carry: 1,
+    def: 3,
+    carry: 2,
     speed: 0.5,
     count: 0,
     cost: 15,
     color: '#1bececff',
     size: 12,
-    imageScale: 1.1,
+    imageScale: 1.15,
     gachaRate: 0.00066,
     purchasePrice: 500000,
   },
   
-  // 6段（幻）- 0.1%
+  // 6段（幻）- 0.2%
   perfecthercules: {
     name: 'パーフェクトヘラクレス',
     rarity: 6,
@@ -267,7 +267,7 @@ export const beetleTypes = {
     cost: 60,
     color: '#FF1493',
     size: 21,
-    imageScale: 2.1,
+    imageScale: 2.05,
     gachaRate: 0.0005,
     purchasePrice: null,
   },
@@ -332,12 +332,12 @@ export const BEETLES_BY_TIER = {
  * 🆕 ガチャ排出率（レアリティ別）
  */
 export const GACHA_RATES = {
-  1: 87.2,
-  2: 10.0,
-  3: 2.0,
-  4: 0.5,
-  5: 0.2,
-  6: 0.1,
+  1: 79.3,
+  2: 15.0,
+  3: 4.0,
+  4: 1.0,
+  5: 0.5,
+  6: 0.2,
 };
 
 /**

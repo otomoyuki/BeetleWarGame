@@ -91,7 +91,7 @@ export const DIFFICULTY_MODES = [
     id: 1, 
     name: '初級', 
     cpuBonus: 0,
-    reward: { win: 10000000, draw: 5, lose: 3 },
+    reward: { win: 10, draw: 5, lose: 3 },
     description: '初心者向け'
   },
   { 
@@ -105,56 +105,56 @@ export const DIFFICULTY_MODES = [
     id: 3, 
     name: '中級', 
     cpuBonus: 0.35,
-    reward: { win: 13, draw: 7, lose: 4 },
+    reward: { win: 15, draw: 8, lose: 4 },
     description: '中程度'
   },
   { 
     id: 4, 
     name: '中級+', 
     cpuBonus: 0.55,
-    reward: { win: 14, draw: 7, lose: 4 },
+    reward: { win: 20, draw: 10, lose: 4 },
     description: 'やや強い'
   },
   { 
     id: 5, 
     name: '上級', 
     cpuBonus: 0.80,
-    reward: { win: 15, draw: 8, lose: 5 },
+    reward: { win: 25, draw: 12, lose: 5 },
     description: '上級者向け'
   },
   { 
     id: 6, 
     name: '上級+', 
     cpuBonus: 1.10,
-    reward: { win: 17, draw: 9, lose: 5 },
+    reward: { win: 30, draw: 15, lose: 5 },
     description: 'かなり強い'
   },
   { 
     id: 7, 
     name: '鬼級', 
     cpuBonus: 1.50,
-    reward: { win: 20, draw: 10, lose: 5 },
+    reward: { win: 40, draw: 20, lose: 5 },
     description: '鬼のような強さ'
   },
   { 
     id: 8, 
     name: '鬼級+', 
     cpuBonus: 2.10,
-    reward: { win: 25, draw: 12, lose: 6 },
+    reward: { win: 55, draw: 25, lose: 5 },
     description: '超難関'
   },
   { 
     id: 9, 
     name: '悪魔級', 
     cpuBonus: 2.80,
-    reward: { win: 30, draw: 15, lose: 7 },
+    reward: { win: 70, draw: 30, lose: 5 },
     description: '悪魔的難易度'
   },
   { 
     id: 10, 
     name: '地獄級', 
     cpuBonus: 3.50,
-    reward: { win: 50, draw: 25, lose: 7 },
+    reward: { win: 100, draw: 35, lose: 5 },
     description: '地獄の難易度'
   }
 ];
