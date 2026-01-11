@@ -30,9 +30,9 @@ const GameHub = ({ onSelectGame }) => {
               <div className="text-6xl mb-4 text-center">🪲</div>
               <h2 className="text-3xl font-bold text-white mb-4 text-center">甲虫戦争</h2>
               <p className="text-gray-300 mb-4">
-                樹液を集めてゴールに運べ！<br/>
-                17種類の甲虫でデッキを組み、<br/>
-                3分間のリアルタイムバトル！
+                SemanticGroveの森で繰り広げられる樹液争奪戦！ヘラクレス、アトラス...17種の甲虫を集め、育成し、
+                3分間のリアルタイムバトルで勝利を掴め！<br>
+                キャラクターをクリックで戦略的な位置に配置
               </p>
               <div className="flex justify-between text-sm text-gray-400">
                 <span>⚔️ リアルタイム戦略</span>
