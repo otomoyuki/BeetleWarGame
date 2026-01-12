@@ -393,7 +393,7 @@ const LuckSystem = ({ playerData, onClose, onLevelUp, onDistribute }) => {
               </div>
             ) : (
               <div className="text-yellow-300 font-bold mt-2">
-                • 地獄の沙汰も金次第 - SGで配分変更可能
+                • SGで配分変更可能
               </div>
             )}
           </div>
