@@ -48,7 +48,8 @@ import {
   BEETLE_STATES, 
   POSITIONS, 
   LUP_REWARDS, 
-  getSGReward
+  getSGReward,
+  DIFFICULTY_MODES
 } from '../../utils/constants';
 
 const BeetleGame = () => {
@@ -145,9 +146,11 @@ const BeetleGame = () => {
     const redBeetles = gameStateRef.current.beetles.filter(b => b.team === 'red');
     if (redBeetles.length > 0) {
       redBeetles.forEach(beetle => {
-        const nectarLUP = Math.floor((gameStatsRef.current.nectarDelivered / redBeetles.length) * LUP_REWARDS.NECTAR_DELIVERED);
-        const defeatedLUP = Math.floor((gameStatsRef.current.enemiesDefeated / redBeetles.length) * LUP_REWARDS.ENEMY_DEFEATED);
-        
+        const mode = DIFFICULTY_MODES.find(m => m.id === difficulty) || DIFFICULTY_MODES[0];
+        const lupMultiplier = mode.lupMultiplier || 1.0;
+
+        const nectarLUP = Math.floor((gameStatsRef.current.nectarDelivered / redBeetles.length) * LUP_REWARDS.NECTAR_DELIVERED * lupMultiplier);
+        const defeatedLUP = Math.floor((gameStatsRef.current.enemiesDefeated / redBeetles.length) * LUP_REWARDS.ENEMY_DEFEATED * lupMultiplier);
         if (nectarLUP > 0 || defeatedLUP > 0) {
           addLUP(newPlayerData, nectarLUP + defeatedLUP);
         }
@@ -263,7 +266,7 @@ const BeetleGame = () => {
                 });
               }
               
-              returnNectarToPool(beetle, state, nectar1X, nectar1Y, nectar2X, nectar2Y);
+              //returnNectarToPool(beetle, state, nectar1X, nectar1Y, nectar2X, nectar2Y);
               
               beetle.carrying = 0;
               beetle.state = BEETLE_STATES.IDLE;

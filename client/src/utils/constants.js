@@ -91,71 +91,97 @@ export const DIFFICULTY_MODES = [
     id: 1, 
     name: '初級', 
     cpuBonus: 0,
-    reward: { win: 10, draw: 5, lose: 3 },
+    reward: { win: 20, draw: 10, lose: 3 },
+    lupMultiplier: 1.0,  // ⭐ 追加
     description: '初心者向け'
   },
   { 
     id: 2, 
     name: '初級+', 
     cpuBonus: 0.15,
-    reward: { win: 12, draw: 6, lose: 4 },
+    reward: { win: 25, draw: 12, lose: 4 },
+    lupMultiplier: 1.2,  // ⭐ 1.2倍
     description: '少し強い'
   },
   { 
     id: 3, 
     name: '中級', 
     cpuBonus: 0.35,
-    reward: { win: 15, draw: 8, lose: 4 },
+    reward: { win: 30, draw: 15, lose: 4 },
+    lupMultiplier: 1.5,  // ⭐ 1.5倍
     description: '中程度'
   },
   { 
     id: 4, 
     name: '中級+', 
     cpuBonus: 0.55,
-    reward: { win: 20, draw: 10, lose: 4 },
+    reward: { win: 40, draw: 20, lose: 4 },
+    lupMultiplier: 1.8,
     description: 'やや強い'
   },
   { 
     id: 5, 
     name: '上級', 
     cpuBonus: 0.80,
-    reward: { win: 25, draw: 12, lose: 5 },
+    reward: { win: 50, draw: 25, lose: 5 },
+    lupMultiplier: 2.0,  // ⭐ 2倍
     description: '上級者向け'
   },
   { 
     id: 6, 
     name: '上級+', 
     cpuBonus: 1.10,
-    reward: { win: 30, draw: 15, lose: 5 },
+    reward: { win: 60, draw: 30, lose: 5 },
+    lupMultiplier: 2.5,
     description: 'かなり強い'
   },
   { 
     id: 7, 
     name: '鬼級', 
     cpuBonus: 1.50,
-    reward: { win: 40, draw: 20, lose: 5 },
+    reward: { win: 80, draw: 40, lose: 5 },
+    lupMultiplier: 3.0,  // ⭐ 3倍
     description: '鬼のような強さ'
   },
   { 
     id: 8, 
     name: '鬼級+', 
     cpuBonus: 2.10,
-    reward: { win: 55, draw: 25, lose: 5 },
+    reward: { win: 100, draw: 50, lose: 5 },
+    lupMultiplier: 4.0,
     description: '超難関'
   },
   { 
     id: 9, 
     name: '悪魔級', 
     cpuBonus: 2.80,
-    reward: { win: 70, draw: 30, lose: 5 },
+    reward: { win: 150, draw: 70, lose: 5 },
+    lupMultiplier: 5.0,  // ⭐ 5倍
     description: '悪魔的難易度'
   },
   { 
     id: 10, 
     name: '地獄級', 
     cpuBonus: 3.50,
-    reward: { win: 100, draw: 35, lose: 5 },
+    reward: { win: 200, draw: 90, lose: 5 },
+    lupMultiplier: 7.0,  // ⭐ 7倍
     description: '地獄の難易度'
+  },
+  { 
+    id: 11, 
+    name: '白色矮星級', 
+    cpuBonus: 4.50,
+    reward: { win: 400, draw: 170, lose: 5 },
+    lupMultiplier: 10.0,  // ⭐ 10倍
+    description: '地獄を超える難易度'
+  },
+  { 
+    id: 12, 
+    name: 'ブラックホール級', 
+    cpuBonus: 7.00,
+    reward: { win: 700, draw: 250, lose: 5 },
+    lupMultiplier: 15.0,  // ⭐ 15倍！
+    description: 'ブラックホールの難易度'
   }
 ];
 
@@ -171,8 +197,8 @@ export const getSGReward = (difficulty, result) => {
  * SG報酬（旧版：互換性のため残す）
  */
 export const SG_REWARDS = {
-  WIN: 10,
-  DRAW: 5,
+  WIN: 20,
+  DRAW: 10,
   LOSE: 3,
 };
 
@@ -191,7 +217,7 @@ export const UPGRADE_COSTS = {
   HP: 10,
   ATK: 20,
   DEF: 20,
-  CARRY: 50,
+  CARRY: 30,
   SPEED: 20,
 };
 
