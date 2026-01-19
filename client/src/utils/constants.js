@@ -91,7 +91,7 @@ export const DIFFICULTY_MODES = [
     id: 1, 
     name: '初級', 
     cpuBonus: 0,
-    reward: { win: 20, draw: 10, lose: 3 },
+    reward: { win: 20000000, draw: 10, lose: 3 },
     lupMultiplier: 1.0,  // ⭐ 追加
     description: '初心者向け'
   },
@@ -221,6 +221,13 @@ export const UPGRADE_COSTS = {
   SPEED: 20,
 };
 
+/**
+ * 難易度に応じたLUP報酬を計算
+ */
+export const getLUPReward = (difficulty, baseReward) => {
+  const mode = DIFFICULTY_MODES.find(m => m.id === difficulty) || DIFFICULTY_MODES[0];
+  return Math.floor(baseReward * (mode.lupMultiplier || 1.0));
+};
 /**
  * レベルアップコスト計算
  */
