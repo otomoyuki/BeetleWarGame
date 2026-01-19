@@ -91,7 +91,7 @@ export const DIFFICULTY_MODES = [
     id: 1, 
     name: '初級', 
     cpuBonus: 0,
-    reward: { win: 20000000, draw: 10, lose: 3 },
+    reward: { win: 20, draw: 10, lose: 3 },
     lupMultiplier: 1.0,  // ⭐ 追加
     description: '初心者向け'
   },
