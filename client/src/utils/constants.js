@@ -312,3 +312,12 @@ export const calculateTotalLuckCost = (targetLevel) => {
   }
   return total;
 };
+/**
+ * ゲームスピード設定
+ */
+export const GAME_SPEED_OPTIONS = [
+  { speed: 1.0, cost: 0, label: '通常速度' },
+  { speed: 1.5, cost: 1, label: '1.5倍速' },
+  { speed: 2.0, cost: 3, label: '2倍速' },
+  { speed: 3.0, cost: 5, label: '3倍速' },
+];
