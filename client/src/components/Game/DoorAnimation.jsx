@@ -8,7 +8,7 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
   const [textScale, setTextScale] = useState(0.5);
   const [textOpacity, setTextOpacity] = useState(0);
 
-  const totalFrames = 6; // frame-0 ~ frame-5
+  const totalFrames = 9; // frame-0 ~ frame-8
 
   useEffect(() => {
     if (phase === 'opening') {
@@ -133,7 +133,7 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
           }}
         >
           <div className="text-6xl font-bold text-amber-400 tracking-widest">
-            ゲームスタート！
+            GAME START!
           </div>
         </div>
       )}
