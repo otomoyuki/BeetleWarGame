@@ -91,6 +91,10 @@ const BeetleGame = () => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
+    
+    // Canvas サイズを確認
+    console.log('🎮 Canvas サイズ:', canvas.width, 'x', canvas.height);
+    
     gameStateRef.current = createInitialGameState(
       canvas.width, 
       canvas.height, 
@@ -106,6 +110,39 @@ const BeetleGame = () => {
     setTimeLeft(GAME_CONFIG.GAME_TIME);
     gameStatsRef.current = { nectarDelivered: 0, enemiesDefeated: 0 };
   }, [resetTrigger, playerData.beetleUpgrades, playerData.deck, difficulty]);
+
+  // gamePhase が 'playing' になった時に Canvas を強制再描画
+  useEffect(() => {
+    if (gamePhase === 'playing' && canvasRef.current) {
+      console.log('🎮 ゲームフェーズ変更 → playing');
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      // ゲーム状態がなければ初期化
+      if (!gameStateRef.current) {
+        console.log('⚠️ ゲーム状態がないため初期化します');
+        gameStateRef.current = createInitialGameState(
+          canvas.width,
+          canvas.height,
+          playerData.deck,
+          playerData.beetleUpgrades,
+          difficulty
+        );
+      }
+      
+      // 即座に1回描画
+      drawGame(ctx, gameStateRef.current, selectedBeetle, canvas.width, canvas.height);
+      console.log('✅ 初回描画完了');
+      
+      // 念のため 100ms 後にもう一度描画
+      setTimeout(() => {
+        if (canvasRef.current && gameStateRef.current) {
+          drawGame(ctx, gameStateRef.current, selectedBeetle, canvas.width, canvas.height);
+          console.log('✅ 2回目描画完了');
+        }
+      }, 100);
+    }
+  }, [gamePhase, playerData.deck, playerData.beetleUpgrades, difficulty]);
 
   // タイマー管理（スピード適用）
   useEffect(() => {
@@ -314,7 +351,7 @@ const BeetleGame = () => {
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [isRunning, winner, selectedBeetle, resetTrigger, playerData.beetleUpgrades, difficulty, gamePhase]);
+  }, [isRunning, winner, selectedBeetle, resetTrigger, playerData.beetleUpgrades, difficulty, gamePhase, gameSpeed]);
 
   // キャンバスクリック処理
   const handleCanvasClick = (e) => {
@@ -382,6 +419,8 @@ const BeetleGame = () => {
 
   // 扉アニメーション完了時の処理
   const handleDoorAnimationComplete = () => {
+    console.log('🚪 扉アニメーション完了:', gamePhase);
+    
     if (gamePhase === 'waiting') {
       // スピード料金を消費
       const speedOption = GAME_SPEED_OPTIONS.find(s => s.speed === gameSpeed);
@@ -396,11 +435,14 @@ const BeetleGame = () => {
         }
       }
       setGamePhase('opening');
+      console.log('🚪 フェーズ変更: waiting → opening');
     } else if (gamePhase === 'opening') {
       setGamePhase('playing');
       setIsRunning(true);
+      console.log('🎮 ゲーム開始: opening → playing');
     } else if (gamePhase === 'closing') {
       setGamePhase('result');
+      console.log('📊 リザルト表示: closing → result');
     }
   };
 
@@ -541,32 +583,39 @@ const BeetleGame = () => {
           🪲 甲虫戦争ゲーム 🪲
         </h1>
 
-        <PlayerStats 
-          sg={playerData.sg}
-          costExpansions={playerData.costExpansions || 0}
-          difficulty={difficulty}
-          luck={playerData.luck}
-          gameSpeed={gameSpeed}
-          onDifficultyChange={handleDifficultyChange}
-          onGameSpeedChange={handleGameSpeedChange}
-          onOpenShop={() => setShowShop(true)}
-          onOpenDeck={() => setShowDeck(true)}
-          onOpenGacha={() => setShowGacha(true)}
-          onOpenSell={() => setShowSell(true)}
-          onOpenLuck={() => setShowLuck(true)}
-          gameStarted={gamePhase === 'playing'}
-        />
+        {/* 上部エリア（高さ固定） */}
+        <div style={{ minHeight: '220px' }}>
+          {/* 待機画面とリザルト画面でのみPlayerStatsを表示 */}
+          {(gamePhase === 'waiting' || gamePhase === 'result') && (
+            <PlayerStats 
+              sg={playerData.sg}
+              costExpansions={playerData.costExpansions || 0}
+              difficulty={difficulty}
+              luck={playerData.luck}
+              gameSpeed={gameSpeed}
+              onDifficultyChange={handleDifficultyChange}
+              onGameSpeedChange={handleGameSpeedChange}
+              onOpenShop={() => setShowShop(true)}
+              onOpenDeck={() => setShowDeck(true)}
+              onOpenGacha={() => setShowGacha(true)}
+              onOpenSell={() => setShowSell(true)}
+              onOpenLuck={() => setShowLuck(true)}
+              gameStarted={gamePhase === 'playing'}
+            />
+          )}
 
-        {gamePhase === 'playing' && (
-          <ScoreBoard 
-            redNectar={redNectar} 
-            blueNectar={blueNectar} 
-            timeLeft={timeLeft}
-          />
-        )}
+          {/* ゲーム中はScoreBoardのみ表示 */}
+          {gamePhase === 'playing' && (
+            <ScoreBoard 
+              redNectar={redNectar} 
+              blueNectar={blueNectar} 
+              timeLeft={timeLeft}
+            />
+          )}
+        </div>
 
         {/* 扉アニメーション or ゲーム画面 */}
-        <div className="relative bg-gray-800 rounded-lg overflow-hidden" style={{ width: '800px', height: '600px' }}>
+        <div className="relative bg-gray-800 rounded-lg overflow-hidden mx-auto" style={{ width: '900px', height: '700px' }}>
           {(gamePhase === 'waiting' || gamePhase === 'opening' || gamePhase === 'closing') && (
             <DoorAnimation 
               phase={gamePhase} 
@@ -575,12 +624,14 @@ const BeetleGame = () => {
           )}
           
           {gamePhase === 'playing' && (
-            <GameCanvas 
-              canvasRef={canvasRef}
-              onClick={handleCanvasClick}
-              selectedBeetle={selectedBeetle}
-              winner={winner}
-            />
+            <div className="w-full h-full">
+              <GameCanvas 
+                canvasRef={canvasRef}
+                onClick={handleCanvasClick}
+                selectedBeetle={selectedBeetle}
+                winner={winner}
+              />
+            </div>
           )}
           
           {gamePhase === 'result' && (
