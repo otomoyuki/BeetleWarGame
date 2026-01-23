@@ -94,9 +94,9 @@ const drawBeetleWithRotation = (ctx, beetle, size) => {
     const drawSize = size * scale;
     
     // 円形の半透明背景を描画（白）
-    ctx.fillStyle = 'rgba(185, 195, 185, 0.5)';
+    ctx.fillStyle = 'rgba(65, 75, 65, 0.6)';
     ctx.beginPath();
-    ctx.arc(0, 0, drawSize * 0.7, 0, Math.PI * 2);
+    ctx.arc(0, 0, drawSize * 0.6, 0, Math.PI * 2);
     ctx.fill();
     
     // 影を追加（白い縁取り）
