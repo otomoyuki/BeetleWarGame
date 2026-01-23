@@ -450,6 +450,9 @@ const BeetleGame = () => {
   const handleReturnToTitle = () => {
     setIsRunning(false);
     setWinner(null);
+    setRedNectar(0);  // ← 追加
+    setBlueNectar(0);  // ← 追加
+    setTimeLeft(GAME_CONFIG.GAME_TIME);  // ← 追加
     setGamePhase('waiting');
     setResetTrigger(prev => prev + 1);
   };
