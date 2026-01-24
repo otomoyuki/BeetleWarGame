@@ -93,14 +93,8 @@ const drawBeetleWithRotation = (ctx, beetle, size) => {
     const scale = bType.imageScale || 1.0;
     const drawSize = size * scale;
     
-    // 円形の半透明背景を描画（白）
-    ctx.fillStyle = 'rgba(65, 75, 65, 0.6)';
-    ctx.beginPath();
-    ctx.arc(0, 0, drawSize * 0.6, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 影を追加（白い縁取り）
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+    // 影を追加（黒い縁取り）
+    ctx.shadowColor = 'rgba(50, 50, 50, 0.8)';
     ctx.shadowBlur = 8;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;

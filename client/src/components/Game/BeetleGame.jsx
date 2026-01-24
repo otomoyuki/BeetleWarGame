@@ -450,9 +450,23 @@ const BeetleGame = () => {
   const handleReturnToTitle = () => {
     setIsRunning(false);
     setWinner(null);
-    setRedNectar(0);  // ← 追加
-    setBlueNectar(0);  // ← 追加
-    setTimeLeft(GAME_CONFIG.GAME_TIME);  // ← 追加
+    setRedNectar(0);
+    setBlueNectar(0);
+    setTimeLeft(GAME_CONFIG.GAME_TIME);
+    setSelectedBeetle(null);
+    gameStatsRef.current = { nectarDelivered: 0, enemiesDefeated: 0 };
+    
+    // ゲーム状態を完全にリセット
+    if (canvasRef.current) {
+      gameStateRef.current = createInitialGameState(
+        canvasRef.current.width,
+        canvasRef.current.height,
+        playerData.deck,
+        playerData.beetleUpgrades,
+        difficulty
+      );
+    }
+    
     setGamePhase('waiting');
     setResetTrigger(prev => prev + 1);
   };
