@@ -8,23 +8,28 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
   const [textScale, setTextScale] = useState(0.5);
   const [textOpacity, setTextOpacity] = useState(0);
 
-  const totalFrames = 9; // frame-0 ~ frame-8
+  const totalFrames = 6; // frame-0 ~ frame-5
 
   useEffect(() => {
     if (phase === 'opening') {
       // 扉が開くアニメーション（2秒）
       let frame = 0;
+      const totalFrames = 6;
+      const frameDuration = 2000 / totalFrames; // 約333ms/フレーム
+      
       const frameInterval = setInterval(() => {
         frame++;
-        if (frame >= totalFrames) {
+        setCurrentFrame(frame);
+        
+        if (frame >= totalFrames - 1) {
           clearInterval(frameInterval);
           setCurrentFrame(totalFrames - 1);
           // 開き終わったら「ゲームスタート！」を表示
-          setShowStartText(true);
-        } else {
-          setCurrentFrame(frame);
+          setTimeout(() => {
+            setShowStartText(true);
+          }, 100); // 少し待ってから表示
         }
-      }, 2000 / totalFrames); // 2秒 ÷ 6フレーム = 約333ms/フレーム
+      }, frameDuration);
 
       return () => clearInterval(frameInterval);
     } else if (phase === 'closing') {
@@ -52,32 +57,39 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
   useEffect(() => {
     if (showStartText) {
       let progress = 0;
+      const duration = 1000; // 1秒
+      const fps = 20;
+      const interval = 1000 / fps; // 50ms
+      
       const textInterval = setInterval(() => {
-        progress += 0.05; // 20フレーム = 1秒
+        progress += interval;
+        const t = progress / duration; // 0〜1
         
-        if (progress <= 0.5) {
+        if (t <= 0.5) {
           // 0.0～0.5秒: 拡大しながらフェードイン
-          setTextScale(0.5 + progress * 3); // 0.5 → 2.0
-          setTextOpacity(progress * 2); // 0 → 1
+          setTextScale(0.5 + t * 3); // 0.5 → 2.0
+          setTextOpacity(t * 2); // 0 → 1
         } else {
           // 0.5～1.0秒: さらに拡大しながらフェードアウト
-          setTextScale(2.0 + (progress - 0.5) * 4); // 2.0 → 4.0
-          setTextOpacity(2 - progress * 2); // 1 → 0
+          setTextScale(2.0 + (t - 0.5) * 4); // 2.0 → 4.0
+          setTextOpacity(2 - t * 2); // 1 → 0
         }
 
-        if (progress >= 1.0) {
+        if (progress >= duration) {
           clearInterval(textInterval);
           setShowStartText(false);
           // アニメーション完了、ゲーム開始
-          if (onAnimationComplete) {
-            onAnimationComplete();
-          }
+          setTimeout(() => {
+            if (onAnimationComplete) {
+              onAnimationComplete();
+            }
+          }, 100);
         }
-      }, 50); // 50ms = 20fps
+      }, interval);
 
       return () => clearInterval(textInterval);
     }
-  }, [showStartText]);
+  }, [showStartText, onAnimationComplete]);
 
   // 待機画面（クリックで開始）
   if (phase === 'waiting') {
@@ -133,7 +145,7 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
           }}
         >
           <div className="text-6xl font-bold text-amber-400 tracking-widest">
-            GAME START!
+            ゲームスタート！
           </div>
         </div>
       )}
