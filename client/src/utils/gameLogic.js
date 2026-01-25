@@ -333,21 +333,20 @@ export const updatePosition = (beetle, width, height) => {
 };
 
 /**
- * 移動処理
+ * 移動処理（ゲームスピード対応）
  */
-export const moveToTarget = (beetle, targetX, targetY) => {
+export const moveToTarget = (beetle, targetX, targetY, gameSpeed = 1.0) => {
   const dx = targetX - beetle.x;
   const dy = targetY - beetle.y;
   const dist = Math.sqrt(dx * dx + dy * dy);
   
   if (dist > 10) {
-    beetle.vx = (dx / dist) * beetle.speed;
-    beetle.vy = (dy / dist) * beetle.speed;
+    beetle.vx = (dx / dist) * beetle.speed * gameSpeed; // ← gameSpeed適用
+    beetle.vy = (dy / dist) * beetle.speed * gameSpeed; // ← gameSpeed適用
     return false;
   }
   return true;
 };
-
 /**
  * 移動方向に角度を更新
  */
