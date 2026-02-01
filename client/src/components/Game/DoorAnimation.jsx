@@ -1,21 +1,56 @@
 // client/src/components/Game/DoorAnimation.jsx
-// 修正版（アニメーションが正しく動くように）
+// 画像プリロード対応版
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const DoorAnimation = ({ phase, onAnimationComplete }) => {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [showStartText, setShowStartText] = useState(false);
   const [textScale, setTextScale] = useState(0.5);
   const [textOpacity, setTextOpacity] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false); // ← 画像読み込み完了フラグ
+  
+  const doorImagesRef = useRef([]); // ← プリロードした画像を保持
+  const totalFrames = 9; // frame-0 ~ frame-8
 
-  const totalFrames = 6; // frame-0 ~ frame-5
-
+  // 🔥 画像をプリロードする
   useEffect(() => {
+    console.log('🖼️ 扉画像のプリロード開始...');
+    const images = [];
+    let loadedCount = 0;
+
+    for (let i = 0; i < totalFrames; i++) {
+      const img = new Image();
+      img.src = `/images/door-animation/frame-${i}.png`;
+      
+      img.onload = () => {
+        loadedCount++;
+        console.log(`✅ 扉画像 ${i} 読み込み完了 (${loadedCount}/${totalFrames})`);
+        
+        if (loadedCount === totalFrames) {
+          console.log('🎉 全ての扉画像の読み込み完了！');
+          setImagesLoaded(true);
+        }
+      };
+      
+      img.onerror = () => {
+        console.error(`❌ 扉画像 ${i} の読み込み失敗`);
+      };
+      
+      images[i] = img;
+    }
+    
+    doorImagesRef.current = images;
+  }, []);
+
+  // 扉アニメーション（画像読み込み完了後のみ実行）
+  useEffect(() => {
+    if (!imagesLoaded) return; // ← 画像が読み込まれるまで待つ
+
     if (phase === 'opening') {
       console.log('🚪 扉を開きます...');
       let frame = 0;
-      setCurrentFrame(0); // ← 最初のフレームから開始
+      setCurrentFrame(0);
       
       const frameDuration = 2000 / totalFrames; // 約333ms/フレーム
       
@@ -27,7 +62,6 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
         if (frame >= totalFrames - 1) {
           clearInterval(frameInterval);
           console.log('🚪 扉が開ききりました');
-          // 開き終わったら「ゲームスタート！」を表示
           setTimeout(() => {
             setShowStartText(true);
           }, 100);
@@ -49,7 +83,6 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
           clearInterval(frameInterval);
           setCurrentFrame(0);
           console.log('🚪 扉が閉じました');
-          // 閉じ終わったら完了通知
           if (onAnimationComplete) {
             onAnimationComplete();
           }
@@ -60,7 +93,7 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
 
       return () => clearInterval(frameInterval);
     }
-  }, [phase, onAnimationComplete]);
+  }, [phase, onAnimationComplete, imagesLoaded]); // ← imagesLoaded を依存配列に追加
 
   // 「ゲームスタート！」テキストアニメーション
   useEffect(() => {
@@ -76,20 +109,17 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
         const t = progress / duration; // 0〜1
         
         if (t <= 0.5) {
-          // 0.0～0.5秒: 拡大しながらフェードイン
-          setTextScale(0.5 + t * 3); // 0.5 → 2.0
-          setTextOpacity(t * 2); // 0 → 1
+          setTextScale(0.5 + t * 3);
+          setTextOpacity(t * 2);
         } else {
-          // 0.5～1.0秒: さらに拡大しながらフェードアウト
-          setTextScale(2.0 + (t - 0.5) * 4); // 2.0 → 4.0
-          setTextOpacity(2 - t * 2); // 1 → 0
+          setTextScale(2.0 + (t - 0.5) * 4);
+          setTextOpacity(2 - t * 2);
         }
 
         if (progress >= duration) {
           clearInterval(textInterval);
           setShowStartText(false);
           console.log('✨ ゲームスタート演出完了 → ゲーム開始');
-          // アニメーション完了、ゲーム開始
           setTimeout(() => {
             if (onAnimationComplete) {
               onAnimationComplete();
@@ -107,7 +137,14 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
     return (
       <div 
         className="relative w-full h-full cursor-pointer"
-        onClick={onAnimationComplete}
+        onClick={() => {
+          // 画像が読み込まれてからアニメーション開始
+          if (imagesLoaded) {
+            onAnimationComplete();
+          } else {
+            console.warn('⚠️ 画像読み込み中...少々お待ちください');
+          }
+        }}
       >
         <img 
           src="/images/door-animation/frame-0.png" 
@@ -116,12 +153,14 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-4xl font-bold text-white bg-black bg-opacity-50 px-8 py-4 rounded-lg animate-pulse">
-              クリックでスタート
+            <div className={`text-4xl font-bold text-white bg-black bg-opacity-50 px-8 py-4 rounded-lg ${imagesLoaded ? 'animate-pulse' : ''}`}>
+              {imagesLoaded ? 'クリックでスタート' : '読み込み中...'}
             </div>
-            <p className="text-white text-sm mt-4 bg-black bg-opacity-30 px-4 py-2 rounded">
-              💡 ゲーム中はESCキーで一時停止できます
-            </p>
+            {imagesLoaded && (
+              <p className="text-white text-sm mt-4 bg-black bg-opacity-30 px-4 py-2 rounded">
+                💡 ゲーム中はESCキーで一時停止できます
+              </p>
+            )}
           </div>
         </div>
       </div>
