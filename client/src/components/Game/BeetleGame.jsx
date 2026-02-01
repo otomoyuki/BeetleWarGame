@@ -57,6 +57,7 @@ const BeetleGame = () => {
   // ゲームフェーズ管理
   const [gamePhase, setGamePhase] = useState('waiting'); // 'waiting' | 'opening' | 'playing' | 'closing' | 'result'
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false); // ← 一時停止状態
   
   const [redNectar, setRedNectar] = useState(0);
   const [blueNectar, setBlueNectar] = useState(0);
@@ -85,6 +86,19 @@ const BeetleGame = () => {
     console.log('🎨 画像読み込み開始...');
     loadAllBeetleImages();
   }, []);
+
+  // ESCキーで一時停止
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (gamePhase === 'playing' && (e.key === 'Escape' || e.key === ' ')) {
+        e.preventDefault();
+        setIsPaused(prev => !prev);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [gamePhase]);
 
   // ゲーム初期化
   useEffect(() => {
@@ -146,7 +160,7 @@ const BeetleGame = () => {
 
   // タイマー管理（スピード適用）
   useEffect(() => {
-    if (!isRunning || winner || gamePhase !== 'playing') return;
+    if (!isRunning || winner || gamePhase !== 'playing' || isPaused) return; // ← isPaused追加
 
     const timerInterval = setInterval(() => {
       setTimeLeft(prev => {
@@ -166,7 +180,7 @@ const BeetleGame = () => {
     }, 1000 / gameSpeed); // スピード倍率を適用
 
     return () => clearInterval(timerInterval);
-  }, [isRunning, winner, redNectar, blueNectar, gamePhase, gameSpeed]);
+  }, [isRunning, winner, redNectar, blueNectar, gamePhase, gameSpeed, isPaused]); // ← isPaused追加
 
   // 勝敗確定時の処理
   useEffect(() => {
@@ -234,7 +248,7 @@ const BeetleGame = () => {
       // 描画
       drawGame(ctx, state, selectedBeetle, w, h);
 
-      if (isRunning && !winner && gamePhase === 'playing') {
+      if (isRunning && !winner && gamePhase === 'playing' && !isPaused) { // ← isPaused追加
         // 甲虫の更新（スピード適用）
         state.beetles.forEach(beetle => {
           const stats = getBeetleStats(beetle.type, beetle.upgrades, beetle.level);
@@ -260,7 +274,7 @@ const BeetleGame = () => {
             }
           } else if (beetle.state === BEETLE_STATES.MANUAL) {
             if (beetle.target) {
-              const arrived = moveToTarget(beetle, beetle.target.x, beetle.target.y);
+              const arrived = moveToTarget(beetle, beetle.target.x, beetle.target.y, gameSpeed);
               if (arrived) {
                 beetle.state = BEETLE_STATES.STAYING;
                 beetle.target = null;
@@ -351,7 +365,7 @@ const BeetleGame = () => {
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [isRunning, winner, selectedBeetle, resetTrigger, playerData.beetleUpgrades, difficulty, gamePhase, gameSpeed]);
+  }, [isRunning, winner, selectedBeetle, resetTrigger, playerData.beetleUpgrades, difficulty, gamePhase, gameSpeed, isPaused]); // ← isPaused追加
 
   // キャンバスクリック処理
   const handleCanvasClick = (e) => {
@@ -627,6 +641,8 @@ const BeetleGame = () => {
               redNectar={redNectar} 
               blueNectar={blueNectar} 
               timeLeft={timeLeft}
+              isPaused={isPaused}                        // ← 追加
+              onTogglePause={() => setIsPaused(!isPaused)} // ← 追加    
             />
           )}
         </div>
@@ -648,6 +664,30 @@ const BeetleGame = () => {
                 selectedBeetle={selectedBeetle}
                 winner={winner}
               />
+              
+              {/* 一時停止画面 */}
+              {isPaused && (
+                <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center z-20">
+                  <div className="text-center bg-gray-800 p-8 rounded-lg border-4 border-amber-500">
+                    <h2 className="text-4xl font-bold mb-6 text-amber-400">⏸️ 一時停止</h2>
+                    <div className="space-y-4">
+                      <button
+                        onClick={() => setIsPaused(false)}
+                        className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg text-xl"
+                      >
+                        ▶️ 再開
+                      </button>
+                      <button
+                        onClick={handleReturnToTitle}
+                        className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg"
+                      >
+                        🏠 タイトルに戻る
+                      </button>
+                    </div>
+                    <p className="text-gray-400 text-sm mt-4">ESC または スペースキーでも再開できます</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           

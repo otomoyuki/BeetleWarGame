@@ -1,4 +1,5 @@
 // client/src/components/Game/DoorAnimation.jsx
+// 修正版（アニメーションが正しく動くように）
 
 import React, { useState, useEffect } from 'react';
 
@@ -12,34 +13,42 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
 
   useEffect(() => {
     if (phase === 'opening') {
-      // 扉が開くアニメーション（2秒）
+      console.log('🚪 扉を開きます...');
       let frame = 0;
-      const totalFrames = 6;
+      setCurrentFrame(0); // ← 最初のフレームから開始
+      
       const frameDuration = 2000 / totalFrames; // 約333ms/フレーム
       
       const frameInterval = setInterval(() => {
         frame++;
         setCurrentFrame(frame);
+        console.log(`🚪 フレーム ${frame}/${totalFrames}`);
         
         if (frame >= totalFrames - 1) {
           clearInterval(frameInterval);
-          setCurrentFrame(totalFrames - 1);
+          console.log('🚪 扉が開ききりました');
           // 開き終わったら「ゲームスタート！」を表示
           setTimeout(() => {
             setShowStartText(true);
-          }, 100); // 少し待ってから表示
+          }, 100);
         }
       }, frameDuration);
 
       return () => clearInterval(frameInterval);
+      
     } else if (phase === 'closing') {
-      // 扉が閉じるアニメーション（2秒・逆再生）
+      console.log('🚪 扉を閉じます...');
       let frame = totalFrames - 1;
+      setCurrentFrame(totalFrames - 1);
+      
       const frameInterval = setInterval(() => {
         frame--;
+        console.log(`🚪 フレーム ${frame}/${totalFrames}`);
+        
         if (frame < 0) {
           clearInterval(frameInterval);
           setCurrentFrame(0);
+          console.log('🚪 扉が閉じました');
           // 閉じ終わったら完了通知
           if (onAnimationComplete) {
             onAnimationComplete();
@@ -51,11 +60,12 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
 
       return () => clearInterval(frameInterval);
     }
-  }, [phase]);
+  }, [phase, onAnimationComplete]);
 
   // 「ゲームスタート！」テキストアニメーション
   useEffect(() => {
     if (showStartText) {
+      console.log('✨ ゲームスタート演出開始');
       let progress = 0;
       const duration = 1000; // 1秒
       const fps = 20;
@@ -78,6 +88,7 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
         if (progress >= duration) {
           clearInterval(textInterval);
           setShowStartText(false);
+          console.log('✨ ゲームスタート演出完了 → ゲーム開始');
           // アニメーション完了、ゲーム開始
           setTimeout(() => {
             if (onAnimationComplete) {
@@ -108,6 +119,9 @@ const DoorAnimation = ({ phase, onAnimationComplete }) => {
             <div className="text-4xl font-bold text-white bg-black bg-opacity-50 px-8 py-4 rounded-lg animate-pulse">
               クリックでスタート
             </div>
+            <p className="text-white text-sm mt-4 bg-black bg-opacity-30 px-4 py-2 rounded">
+              💡 ゲーム中はESCキーで一時停止できます
+            </p>
           </div>
         </div>
       </div>
