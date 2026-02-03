@@ -15,20 +15,20 @@ import {
  * @param {number} height - キャンバス高さ
  * @param {Array} deckIds - プレイヤーのデッキ（ID配列）
  * @param {Object} beetleUpgrades - 強化データ
- * @param {number} difficulty - 難易度ID (1-10)
+ * @param {number} difficulty - 難易度ID (1-12)
  */
-
 export const createInitialGameState = (width, height, deckIds = [], beetleUpgrades = {}, difficulty = 1) => {
   const beetles = [];
 
   // 難易度ボーナス計算（CPU側のステータス強化）
   const difficultyBonus = difficulty > 1 ? (difficulty - 1) * 0.15 : 0;
 
+  console.log('🔄 ゲーム状態を完全リセット...');
+
   // 🆕 赤チーム（下）プレイヤー側 - デッキIDに基づいて配置
   deckIds.forEach(id => {
     const upgrade = beetleUpgrades[id];
     
-    // 🔧 修正: upgradeが存在しない場合は警告を出して次へ
     if (!upgrade) {
       console.warn(`⚠️ デッキID "${id}" に対応する甲虫データが見つかりません`);
       return;
@@ -36,45 +36,49 @@ export const createInitialGameState = (width, height, deckIds = [], beetleUpgrad
     
     const baseData = beetleTypes[upgrade.type];
     
-    // 🔧 修正: baseDataが存在しない場合も警告
     if (!baseData) {
       console.warn(`⚠️ 甲虫タイプ "${upgrade.type}" のデータが見つかりません`);
       return;
     }
     
-    // 🔧 修正: upgradesが存在しない場合は初期化
     const upgrades = upgrade.upgrades || { hp: 0, atk: 0, def: 0, carry: 0, speed: 0 };
     
-    // 🔧 修正: stats.currentを使う場合とupgradesから計算する場合の両方に対応
-    const currentHP = upgrade.stats?.hp?.current || Math.round(baseData.hp * (1 + upgrades.hp * 0.1));
-    const currentAtk = upgrade.stats?.atk?.current || Math.round(baseData.atk * (1 + upgrades.atk * 0.1));
-    const currentDef = upgrade.stats?.def?.current || Math.round(baseData.def * (1 + upgrades.def * 0.1));
-    const currentCarry = upgrade.stats?.carry?.current || Math.round(baseData.carry * (1 + upgrades.carry * 0.1));
-    const currentSpeed = upgrade.stats?.speed?.current || baseData.speed * (1 + upgrades.speed * 0.1);
+    // 🔥 修正：upgrade.stats を参照せず、常にベースステータス + 強化値から計算
+    // これにより、前回のゲーム状態（HP減少など）を引き継がない
+    const maxHP = Math.round(baseData.hp * (1 + upgrades.hp * 0.1) * (1 + (upgrade.level - 1) * 0.1));
+    const currentAtk = Math.round(baseData.atk * (1 + upgrades.atk * 0.1) * (1 + (upgrade.level - 1) * 0.1));
+    const currentDef = Math.round(baseData.def * (1 + upgrades.def * 0.1) * (1 + (upgrade.level - 1) * 0.1));
+    const currentCarry = Math.round(baseData.carry * (1 + upgrades.carry * 0.1) * (1 + (upgrade.level - 1) * 0.1));
+    const currentSpeed = baseData.speed * (1 + upgrades.speed * 0.1) * (1 + (upgrade.level - 1) * 0.1);
+    
+    // 🔥 修正：ランダムな位置を毎回新規生成
+    const randomX = Math.random() * width;
+    const randomY = height - Math.random() * 100 - 50;
     
     beetles.push({
-      id,
+      id,  // ← IDは同じでもOK
       type: upgrade.type,
       team: 'red',
-      x: Math.random() * width,
-      y: height - Math.random() * 100 - 50,
-      vx: 0,
-      vy: 0,
-      hp: currentHP,
-      maxHp: currentHP,
+      x: randomX,      // ← 新しい位置
+      y: randomY,      // ← 新しい位置
+      vx: 0,           // ← 速度リセット
+      vy: 0,           // ← 速度リセット
+      hp: maxHP,       // ← 最大HPで開始（前回の減ったHPを引き継がない）
+      maxHp: maxHP,
       atk: currentAtk,
       def: currentDef,
       carry: currentCarry,
       speed: currentSpeed,
-      carrying: 0,
-      state: BEETLE_STATES.IDLE,
-      target: null,
-      knockoutTime: 0,
-      angle: 0
+      carrying: 0,     // ← 運搬量リセット
+      state: BEETLE_STATES.IDLE,  // ← 状態リセット
+      target: null,    // ← ターゲットリセット
+      knockoutTime: 0, // ← ノックアウト時間リセット
+      angle: 0         // ← 角度リセット
     });
+    
+    console.log(`✅ ${upgrade.type} (ID: ${id}) を配置: HP ${maxHP}, 位置 (${Math.round(randomX)}, ${Math.round(randomY)})`);
   });
 
-  // 🔧 修正: 赤チームの甲虫が1体もいない場合はエラー
   if (beetles.length === 0) {
     console.error('❌ プレイヤー甲虫が1体も配置されませんでした');
     console.error('デッキIDs:', deckIds);
@@ -85,16 +89,18 @@ export const createInitialGameState = (width, height, deckIds = [], beetleUpgrad
   // 青チーム（上）敵側 - 難易度に応じて強化
   Object.entries(beetleTypes).forEach(([type, data]) => {
     for (let i = 0; i < data.count; i++) {
+      const maxHP = Math.round(data.hp * (1 + difficultyBonus));
+      
       beetles.push({
         id: `blue_${type}_${i}`,
         type,
         team: 'blue',
-        x: Math.random() * width,
-        y: Math.random() * 100 + 50,
+        x: Math.random() * width,   // ← 毎回ランダム
+        y: Math.random() * 100 + 50, // ← 毎回ランダム
         vx: 0,
         vy: 0,
-        hp: Math.round(data.hp * (1 + difficultyBonus)),
-        maxHp: Math.round(data.hp * (1 + difficultyBonus)),
+        hp: maxHP,                   // ← 最大HPで開始
+        maxHp: maxHP,
         atk: Math.round(data.atk * (1 + difficultyBonus)),
         def: Math.round(data.def * (1 + difficultyBonus)),
         carry: data.carry,
@@ -109,12 +115,12 @@ export const createInitialGameState = (width, height, deckIds = [], beetleUpgrad
   });
 
   console.log(`✅ ゲーム初期化完了: プレイヤー甲虫 ${beetles.filter(b => b.team === 'red').length}体`);
-;
+  console.log(`🍯 蜜残量: Pool1=${GAME_CONFIG.INITIAL_NECTAR}, Pool2=${GAME_CONFIG.INITIAL_NECTAR}`);
 
   return {
     beetles,
-    nectarPool1: GAME_CONFIG.INITIAL_NECTAR,
-    nectarPool2: GAME_CONFIG.INITIAL_NECTAR,
+    nectarPool1: GAME_CONFIG.INITIAL_NECTAR,  // ← 常に150
+    nectarPool2: GAME_CONFIG.INITIAL_NECTAR,  // ← 常に150
     time: 0
   };
 };
@@ -341,12 +347,13 @@ export const moveToTarget = (beetle, targetX, targetY, gameSpeed = 1.0) => {
   const dist = Math.sqrt(dx * dx + dy * dy);
   
   if (dist > 10) {
-    beetle.vx = (dx / dist) * beetle.speed * gameSpeed; // ← gameSpeed適用
-    beetle.vy = (dy / dist) * beetle.speed * gameSpeed; // ← gameSpeed適用
+    beetle.vx = (dx / dist) * beetle.speed * gameSpeed;
+    beetle.vy = (dy / dist) * beetle.speed * gameSpeed;
     return false;
   }
   return true;
 };
+
 /**
  * 移動方向に角度を更新
  */

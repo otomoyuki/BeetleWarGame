@@ -57,7 +57,7 @@ const BeetleGame = () => {
   // ゲームフェーズ管理
   const [gamePhase, setGamePhase] = useState('waiting'); // 'waiting' | 'opening' | 'playing' | 'closing' | 'result'
   const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false); // ← 一時停止状態
+  const [isPaused, setIsPaused] = useState(false);
   
   const [redNectar, setRedNectar] = useState(0);
   const [blueNectar, setBlueNectar] = useState(0);
@@ -75,7 +75,7 @@ const BeetleGame = () => {
   const [showLuck, setShowLuck] = useState(false);
   
   const [difficulty, setDifficulty] = useState(1);
-  const [gameSpeed, setGameSpeed] = useState(1.0); // ゲームスピード
+  const [gameSpeed, setGameSpeed] = useState(1.0);
   
   const gameStatsRef = useRef({
     nectarDelivered: 0,
@@ -106,24 +106,35 @@ const BeetleGame = () => {
 
     const canvas = canvasRef.current;
     
-    // Canvas サイズを確認
     console.log('🎮 Canvas サイズ:', canvas.width, 'x', canvas.height);
     
-    gameStateRef.current = createInitialGameState(
-      canvas.width, 
-      canvas.height, 
-      playerData.deck,
-      playerData.beetleUpgrades,
-      difficulty
-    );
+    // gamePhase が 'waiting' の時のみ初期化
+    if (gamePhase === 'waiting') {
+      console.log('🔄 待機画面での初期化（まだゲームは開始していません）');
+      
+      gameStateRef.current = null;
+      
+      gameStateRef.current = createInitialGameState(
+        canvas.width, 
+        canvas.height, 
+        playerData.deck,
+        playerData.beetleUpgrades,
+        difficulty
+      );
+      
+      console.log('🍯 蜜残量初期化:', {
+        nectarPool1: gameStateRef.current.nectarPool1,
+        nectarPool2: gameStateRef.current.nectarPool2
+      });
 
-    setRedNectar(0);
-    setBlueNectar(0);
-    setWinner(null);
-    setSelectedBeetle(null);
-    setTimeLeft(GAME_CONFIG.GAME_TIME);
-    gameStatsRef.current = { nectarDelivered: 0, enemiesDefeated: 0 };
-  }, [resetTrigger, playerData.beetleUpgrades, playerData.deck, difficulty]);
+      setRedNectar(0);
+      setBlueNectar(0);
+      setWinner(null);
+      setSelectedBeetle(null);
+      setTimeLeft(GAME_CONFIG.GAME_TIME);
+      gameStatsRef.current = { nectarDelivered: 0, enemiesDefeated: 0 };
+    }
+  }, [resetTrigger, playerData.beetleUpgrades, playerData.deck, difficulty, gamePhase]);
 
   // gamePhase が 'playing' になった時に Canvas を強制再描画
   useEffect(() => {
@@ -132,7 +143,6 @@ const BeetleGame = () => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       
-      // ゲーム状態がなければ初期化
       if (!gameStateRef.current) {
         console.log('⚠️ ゲーム状態がないため初期化します');
         gameStateRef.current = createInitialGameState(
@@ -144,11 +154,9 @@ const BeetleGame = () => {
         );
       }
       
-      // 即座に1回描画
       drawGame(ctx, gameStateRef.current, selectedBeetle, canvas.width, canvas.height);
       console.log('✅ 初回描画完了');
       
-      // 念のため 100ms 後にもう一度描画
       setTimeout(() => {
         if (canvasRef.current && gameStateRef.current) {
           drawGame(ctx, gameStateRef.current, selectedBeetle, canvas.width, canvas.height);
@@ -160,12 +168,11 @@ const BeetleGame = () => {
 
   // タイマー管理（スピード適用）
   useEffect(() => {
-    if (!isRunning || winner || gamePhase !== 'playing' || isPaused) return; // ← isPaused追加
+    if (!isRunning || winner || gamePhase !== 'playing' || isPaused) return;
 
     const timerInterval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          // 時間切れ：勝敗判定
           if (redNectar > blueNectar) {
             setWinner('red');
           } else if (blueNectar > redNectar) {
@@ -177,10 +184,10 @@ const BeetleGame = () => {
         }
         return prev - 1;
       });
-    }, 1000 / gameSpeed); // スピード倍率を適用
+    }, 1000 / gameSpeed);
 
     return () => clearInterval(timerInterval);
-  }, [isRunning, winner, redNectar, blueNectar, gamePhase, gameSpeed, isPaused]); // ← isPaused追加
+  }, [isRunning, winner, redNectar, blueNectar, gamePhase, gameSpeed, isPaused]);
 
   // 勝敗確定時の処理
   useEffect(() => {
@@ -212,7 +219,6 @@ const BeetleGame = () => {
     updateGameStats(newPlayerData, result);
     setPlayerData(newPlayerData);
     
-    // 扉を閉じる演出
     setTimeout(() => {
       setGamePhase('closing');
     }, 1000);
@@ -245,15 +251,12 @@ const BeetleGame = () => {
       const nectar2X = w * POSITIONS.NECTAR2_X_RATIO;
       const nectar2Y = centerY;
 
-      // 描画
       drawGame(ctx, state, selectedBeetle, w, h);
 
-      if (isRunning && !winner && gamePhase === 'playing' && !isPaused) { // ← isPaused追加
-        // 甲虫の更新（スピード適用）
+      if (isRunning && !winner && gamePhase === 'playing' && !isPaused) {
         state.beetles.forEach(beetle => {
           const stats = getBeetleStats(beetle.type, beetle.upgrades, beetle.level);
           
-          // スピード倍率を甲虫に適用
           const effectiveSpeed = beetle.speed * gameSpeed;
 
           if (beetle.state === BEETLE_STATES.KNOCKOUT) {
@@ -365,7 +368,7 @@ const BeetleGame = () => {
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [isRunning, winner, selectedBeetle, resetTrigger, playerData.beetleUpgrades, difficulty, gamePhase, gameSpeed, isPaused]); // ← isPaused追加
+  }, [isRunning, winner, selectedBeetle, resetTrigger, playerData.beetleUpgrades, difficulty, gamePhase, gameSpeed, isPaused]);
 
   // キャンバスクリック処理
   const handleCanvasClick = (e) => {
@@ -436,6 +439,37 @@ const BeetleGame = () => {
     console.log('🚪 扉アニメーション完了:', gamePhase);
     
     if (gamePhase === 'waiting') {
+      // 🔥 重要：ここで完全リセット！
+      console.log('🔄 ゲームを完全リセットしてから開始します...');
+      
+      // 古い参照を完全に破棄
+      gameStateRef.current = null;
+      
+      // 新しいゲーム状態を作成
+      if (canvasRef.current) {
+        gameStateRef.current = createInitialGameState(
+          canvasRef.current.width,
+          canvasRef.current.height,
+          playerData.deck,
+          playerData.beetleUpgrades,
+          difficulty
+        );
+        
+        // 🔍 蜜残量をログ出力して確認
+        console.log('🍯 ゲーム開始前の蜜残量:', {
+          nectarPool1: gameStateRef.current.nectarPool1,
+          nectarPool2: gameStateRef.current.nectarPool2
+        });
+      }
+      
+      // スコアもリセット
+      setRedNectar(0);
+      setBlueNectar(0);
+      setWinner(null);
+      setSelectedBeetle(null);
+      setTimeLeft(GAME_CONFIG.GAME_TIME);
+      gameStatsRef.current = { nectarDelivered: 0, enemiesDefeated: 0 };
+      
       // スピード料金を消費
       const speedOption = GAME_SPEED_OPTIONS.find(s => s.speed === gameSpeed);
       if (speedOption && speedOption.cost > 0) {
@@ -448,12 +482,33 @@ const BeetleGame = () => {
           setGameSpeed(1.0);
         }
       }
+      
       setGamePhase('opening');
       console.log('🚪 フェーズ変更: waiting → opening');
+      
     } else if (gamePhase === 'opening') {
+      // 🔍 ゲーム開始時に蜜残量を確認
+      if (gameStateRef.current) {
+        console.log('🍯 ゲーム開始時の蜜残量:', {
+          nectarPool1: gameStateRef.current.nectarPool1,
+          nectarPool2: gameStateRef.current.nectarPool2
+        });
+        
+        // ⚠️ もし蜜残量が150未満なら強制的にリセット
+        if (gameStateRef.current.nectarPool1 < GAME_CONFIG.INITIAL_NECTAR) {
+          console.warn('⚠️ 蜜残量が異常です！強制リセットします');
+          gameStateRef.current.nectarPool1 = GAME_CONFIG.INITIAL_NECTAR;
+        }
+        if (gameStateRef.current.nectarPool2 < GAME_CONFIG.INITIAL_NECTAR) {
+          console.warn('⚠️ 蜜残量が異常です！強制リセットします');
+          gameStateRef.current.nectarPool2 = GAME_CONFIG.INITIAL_NECTAR;
+        }
+      }
+      
       setGamePhase('playing');
       setIsRunning(true);
       console.log('🎮 ゲーム開始: opening → playing');
+      
     } else if (gamePhase === 'closing') {
       setGamePhase('result');
       console.log('📊 リザルト表示: closing → result');
@@ -462,6 +517,8 @@ const BeetleGame = () => {
 
   // リセット処理
   const handleReturnToTitle = () => {
+    console.log('🏠 タイトルに戻ります...');
+    
     setIsRunning(false);
     setWinner(null);
     setRedNectar(0);
@@ -470,19 +527,14 @@ const BeetleGame = () => {
     setSelectedBeetle(null);
     gameStatsRef.current = { nectarDelivered: 0, enemiesDefeated: 0 };
     
-    // ゲーム状態を完全にリセット
-    if (canvasRef.current) {
-      gameStateRef.current = createInitialGameState(
-        canvasRef.current.width,
-        canvasRef.current.height,
-        playerData.deck,
-        playerData.beetleUpgrades,
-        difficulty
-      );
-    }
+    // 🔥 重要：ここでは gameStateRef をクリアするだけ
+    // 次の waiting → opening のタイミングで完全リセットされる
+    gameStateRef.current = null;
     
     setGamePhase('waiting');
     setResetTrigger(prev => prev + 1);
+    
+    console.log('✅ タイトル画面に戻りました（次回スタート時に完全リセットされます）');
   };
 
   // 強化処理
@@ -641,8 +693,8 @@ const BeetleGame = () => {
               redNectar={redNectar} 
               blueNectar={blueNectar} 
               timeLeft={timeLeft}
-              isPaused={isPaused}                        // ← 追加
-              onTogglePause={() => setIsPaused(!isPaused)} // ← 追加    
+              isPaused={isPaused}
+              onTogglePause={() => setIsPaused(!isPaused)}
             />
           )}
         </div>
@@ -655,7 +707,7 @@ const BeetleGame = () => {
               onAnimationComplete={handleDoorAnimationComplete}
             />
           )}
-          
+                    
           {gamePhase === 'playing' && (
             <div className="w-full h-full">
               <GameCanvas 
