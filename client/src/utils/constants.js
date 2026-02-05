@@ -84,7 +84,51 @@ export const RESPAWN_CORNERS = (width, height) => [
 ];
 
 /**
- * 難易度設定（10段階）
+ * 🆕 限界突破設定
+ */
+export const BREAKTHROUGH_CONFIG = {
+  MAX_LEVEL: 5,
+  THRESHOLDS: [
+    { level: 1, required: 20,  bonus: 0.1, stars: '★☆☆☆☆' },
+    { level: 2, required: 50,  bonus: 0.2, stars: '★★☆☆☆' },
+    { level: 3, required: 90,  bonus: 0.3, stars: '★★★☆☆' },
+    { level: 4, required: 150, bonus: 0.4, stars: '★★★★☆' },
+    { level: 5, required: 230, bonus: 0.5, stars: '★★★★★' },
+  ],
+};
+
+/**
+ * 🆕 限界突破ボーナスを取得
+ */
+export const getBreakthroughBonus = (breakthroughLevel) => {
+  if (breakthroughLevel <= 0 || breakthroughLevel > BREAKTHROUGH_CONFIG.MAX_LEVEL) {
+    return 0;
+  }
+  const threshold = BREAKTHROUGH_CONFIG.THRESHOLDS.find(t => t.level === breakthroughLevel);
+  return threshold ? threshold.bonus : 0;
+};
+
+/**
+ * 🆕 次の限界突破に必要な素材数を取得
+ */
+export const getNextBreakthroughRequired = (currentLevel) => {
+  if (currentLevel >= BREAKTHROUGH_CONFIG.MAX_LEVEL) return null;
+  const nextThreshold = BREAKTHROUGH_CONFIG.THRESHOLDS.find(t => t.level === currentLevel + 1);
+  return nextThreshold ? nextThreshold.required : null;
+};
+
+/**
+ * 🆕 限界突破の星表示を取得
+ */
+export const getBreakthroughStars = (breakthroughLevel) => {
+  if (breakthroughLevel <= 0) return '☆☆☆☆☆';
+  if (breakthroughLevel > BREAKTHROUGH_CONFIG.MAX_LEVEL) return '★★★★★';
+  const threshold = BREAKTHROUGH_CONFIG.THRESHOLDS.find(t => t.level === breakthroughLevel);
+  return threshold ? threshold.stars : '☆☆☆☆☆';
+};
+
+/**
+ * 難易度設定（12段階）
  */
 export const DIFFICULTY_MODES = [
   { 
@@ -92,7 +136,7 @@ export const DIFFICULTY_MODES = [
     name: '初級', 
     cpuBonus: 0,
     reward: { win: 20, draw: 10, lose: 3 },
-    lupMultiplier: 1.0,  // ⭐ 追加
+    lupMultiplier: 1.0,
     description: '初心者向け'
   },
   { 
@@ -100,7 +144,7 @@ export const DIFFICULTY_MODES = [
     name: '初級+', 
     cpuBonus: 0.15,
     reward: { win: 25, draw: 12, lose: 4 },
-    lupMultiplier: 1.2,  // ⭐ 1.2倍
+    lupMultiplier: 1.2,
     description: '少し強い'
   },
   { 
@@ -108,7 +152,7 @@ export const DIFFICULTY_MODES = [
     name: '中級', 
     cpuBonus: 0.35,
     reward: { win: 30, draw: 15, lose: 4 },
-    lupMultiplier: 1.5,  // ⭐ 1.5倍
+    lupMultiplier: 1.5,
     description: '中程度'
   },
   { 
@@ -124,7 +168,7 @@ export const DIFFICULTY_MODES = [
     name: '上級', 
     cpuBonus: 0.80,
     reward: { win: 50, draw: 25, lose: 5 },
-    lupMultiplier: 2.0,  // ⭐ 2倍
+    lupMultiplier: 2.0,
     description: '上級者向け'
   },
   { 
@@ -140,7 +184,7 @@ export const DIFFICULTY_MODES = [
     name: '鬼級', 
     cpuBonus: 1.50,
     reward: { win: 80, draw: 40, lose: 5 },
-    lupMultiplier: 3.0,  // ⭐ 3倍
+    lupMultiplier: 3.0,
     description: '鬼のような強さ'
   },
   { 
@@ -156,7 +200,7 @@ export const DIFFICULTY_MODES = [
     name: '悪魔級', 
     cpuBonus: 2.80,
     reward: { win: 150, draw: 70, lose: 5 },
-    lupMultiplier: 5.0,  // ⭐ 5倍
+    lupMultiplier: 5.0,
     description: '悪魔的難易度'
   },
   { 
@@ -164,7 +208,7 @@ export const DIFFICULTY_MODES = [
     name: '地獄級', 
     cpuBonus: 3.50,
     reward: { win: 200, draw: 90, lose: 5 },
-    lupMultiplier: 7.0,  // ⭐ 7倍
+    lupMultiplier: 7.0,
     description: '地獄の難易度'
   },
   { 
@@ -172,7 +216,7 @@ export const DIFFICULTY_MODES = [
     name: '白色矮星級', 
     cpuBonus: 4.50,
     reward: { win: 400, draw: 170, lose: 5 },
-    lupMultiplier: 10.0,  // ⭐ 10倍
+    lupMultiplier: 10.0,
     description: '地獄を超える難易度'
   },
   { 
@@ -180,7 +224,7 @@ export const DIFFICULTY_MODES = [
     name: 'ブラックホール級', 
     cpuBonus: 7.00,
     reward: { win: 700, draw: 250, lose: 5 },
-    lupMultiplier: 15.0,  // ⭐ 15倍！
+    lupMultiplier: 15.0,
     description: 'ブラックホールの難易度'
   }
 ];
@@ -228,6 +272,7 @@ export const getLUPReward = (difficulty, baseReward) => {
   const mode = DIFFICULTY_MODES.find(m => m.id === difficulty) || DIFFICULTY_MODES[0];
   return Math.floor(baseReward * (mode.lupMultiplier || 1.0));
 };
+
 /**
  * レベルアップコスト計算
  */
@@ -271,12 +316,12 @@ export const calculateCostExpansionPrice = (currentExpansions) => {
  * ガチャ設定
  */
 export const GACHA_CONFIG = {
-  SINGLE_COST: 500,      // 1回のコスト
-  MULTI_COST: 5000,      // 11連のコスト
-  MULTI_COUNT: 11,       // 11連の回数
-  PITY_THRESHOLD: 200,   // 天井（200回）
-  PITY_RARITY: 5,        // 天井時のレアリティ
-  SELL_PRICE: 100,       // 買い取り価格（ガチャ代の1/5）
+  SINGLE_COST: 500,
+  MULTI_COST: 5000,
+  MULTI_COUNT: 11,
+  PITY_THRESHOLD: 200,
+  PITY_RARITY: 5,
+  SELL_PRICE: 100,
 };
 
 /**
@@ -285,12 +330,12 @@ export const GACHA_CONFIG = {
 export const LUCK_CONFIG = {
   MAX_LEVEL: 20,
   LEVEL_COSTS: [
-    0, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000,  // Lv1-10
-    14000, 15000, 10000, 10000, 20000, 20000, 30000, 50000, 50000, 100000  // Lv11-20
+    0, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000,
+    14000, 15000, 10000, 10000, 20000, 20000, 30000, 50000, 50000, 100000
   ],
   BASE_MULTIPLIERS: [
-    1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 2.0,  // Lv1-10
-    2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0   // Lv11-20
+    1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 2.0,
+    2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0
   ],
 };
 
@@ -312,6 +357,7 @@ export const calculateTotalLuckCost = (targetLevel) => {
   }
   return total;
 };
+
 /**
  * ゲームスピード設定
  */

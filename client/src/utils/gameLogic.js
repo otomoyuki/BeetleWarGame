@@ -45,11 +45,14 @@ export const createInitialGameState = (width, height, deckIds = [], beetleUpgrad
     
     // 🔥 修正：upgrade.stats を参照せず、常にベースステータス + 強化値から計算
     // これにより、前回のゲーム状態（HP減少など）を引き継がない
-    const maxHP = Math.round(baseData.hp * (1 + upgrades.hp * 0.1) * (1 + (upgrade.level - 1) * 0.1));
-    const currentAtk = Math.round(baseData.atk * (1 + upgrades.atk * 0.1) * (1 + (upgrade.level - 1) * 0.1));
-    const currentDef = Math.round(baseData.def * (1 + upgrades.def * 0.1) * (1 + (upgrade.level - 1) * 0.1));
-    const currentCarry = Math.round(baseData.carry * (1 + upgrades.carry * 0.1) * (1 + (upgrade.level - 1) * 0.1));
-    const currentSpeed = baseData.speed * (1 + upgrades.speed * 0.1) * (1 + (upgrade.level - 1) * 0.1);
+    // 🔥 修正：レベルボーナスは強化値にのみ適用し、carry は整数で扱う
+    const levelBonus = (upgrade.level - 1) * 0.1;
+    
+    const maxHP = Math.round(baseData.hp * (1 + upgrades.hp * 0.1 + levelBonus));
+    const currentAtk = Math.round(baseData.atk * (1 + upgrades.atk * 0.1 + levelBonus));
+    const currentDef = Math.round(baseData.def * (1 + upgrades.def * 0.1 + levelBonus));
+    const currentCarry = Math.round(baseData.carry * (1 + upgrades.carry * 0.1 + levelBonus));
+    const currentSpeed = baseData.speed * (1 + upgrades.speed * 0.1 + levelBonus);
     
     // 🔥 修正：ランダムな位置を毎回新規生成
     const randomX = Math.random() * width;
@@ -76,7 +79,7 @@ export const createInitialGameState = (width, height, deckIds = [], beetleUpgrad
       angle: 0         // ← 角度リセット
     });
     
-    console.log(`✅ ${upgrade.type} (ID: ${id}) を配置: HP ${maxHP}, 位置 (${Math.round(randomX)}, ${Math.round(randomY)})`);
+    console.log(`✅ ${upgrade.type} (ID: ${id}) を配置: HP ${maxHP}, CARRY ${currentCarry}, 位置 (${Math.round(randomX)}, ${Math.round(randomY)})`);
   });
 
   if (beetles.length === 0) {
