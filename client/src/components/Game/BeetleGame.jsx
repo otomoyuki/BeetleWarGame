@@ -39,7 +39,9 @@ import {
   distributeLuckPoints,
   upgradeBeetle,
   levelUpBeetle,
-  sellBeetles
+  sellBeetles,
+  breakthroughBeetle,
+  setDuplicateMode
 } from '../../utils/playerData';
 import { 
   GAME_CONFIG, 
@@ -555,6 +557,18 @@ const BeetleGame = () => {
     }
   };
 
+  // 限界突破処理
+  const handleBreakthrough = (beetleId) => {
+    const newPlayerData = { ...playerData };
+    const result = breakthroughBeetle(newPlayerData, beetleId);
+    if (result) {
+      setPlayerData(newPlayerData);
+      alert('限界突破成功！ステータスが大幅に上昇しました！');
+    } else {
+      alert('限界突破できません。素材が足りないか、最大レベルです。');
+    }
+  };
+
   // デッキ保存
   const handleSaveDeck = (newDeckIds) => {
     if (gamePhase === 'playing') {
@@ -633,6 +647,14 @@ const BeetleGame = () => {
       setPlayerData(result);
       alert(`${beetleIds.length}体を売却し、${totalSG.toLocaleString()} SG 獲得しました！`);
     }
+  };
+  
+  // 被り設定変更
+  const handleSetDuplicateMode = (type, mode) => {
+    const newPlayerData = { ...playerData };
+    setDuplicateMode(newPlayerData, type, mode);
+    setPlayerData(newPlayerData);
+    console.log(`🔧 ${type} の被り設定を ${mode} に変更`);
   };
 
   // 運レベルアップ
@@ -773,6 +795,7 @@ const BeetleGame = () => {
           onClose={() => setShowShop(false)}
           onUpgrade={handleUpgrade}
           onLevelUp={handleLevelUp}
+          onBreakthrough={handleBreakthrough}
         />
       )}
       
@@ -791,6 +814,7 @@ const BeetleGame = () => {
           onClose={() => setShowGacha(false)}
           onPull={handleGachaPull}
           onPurchase={handlePurchase}
+          onSetDuplicateMode={handleSetDuplicateMode}
         />
       )}
       

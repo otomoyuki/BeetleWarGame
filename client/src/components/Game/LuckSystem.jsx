@@ -161,7 +161,7 @@ const LuckSystem = ({ playerData, onClose, onLevelUp, onDistribute }) => {
     };
 
     // 親コンポーネントに通知
-    onDistribute(reallocationData);
+    onDistribute(tempGachaPoints, tempExpPoints);  // ✅ 2つの数値を渡す
 
     // ダイアログを閉じる
     setShowConfirmDialog(false);

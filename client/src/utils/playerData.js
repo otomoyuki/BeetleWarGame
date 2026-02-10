@@ -1,7 +1,14 @@
 // client/src/utils/playerData.js
 
 import { createInitialUpgradeData, generateBeetleId, beetleTypes } from './beetleData';
-import { UPGRADE_COSTS, calculateLevelUpCost, calculateStatCap, LUCK_CONFIG } from './constants';
+import { 
+  UPGRADE_COSTS, 
+  calculateLevelUpCost, 
+  calculateStatCap, 
+  LUCK_CONFIG,
+  BREAKTHROUGH_CONFIG,
+  getNextBreakthroughRequired
+} from './constants';
 
 const STORAGE_KEY = 'beetleWarGame_playerData';
 
@@ -11,7 +18,6 @@ const STORAGE_KEY = 'beetleWarGame_playerData';
 const createDefaultPlayerData = () => {
   const initialUpgrades = createInitialUpgradeData();
   
-  // 初期デッキ: 所有キャラのIDを配列で管理
   const initialDeck = [];
   Object.keys(initialUpgrades).forEach(id => {
     initialDeck.push(id);
@@ -19,7 +25,7 @@ const createDefaultPlayerData = () => {
   
   return {
     sg: 0,
-    lup: 0, // 🆕 LUPを追加
+    lup: 0,
     beetleUpgrades: initialUpgrades,
     deck: initialDeck,
     costExpansions: 0,
@@ -53,17 +59,14 @@ export const loadPlayerData = () => {
     if (saved) {
       const data = JSON.parse(saved);
       
-      // 後方互換性：LUPがない場合
       if (data.lup === undefined) {
         data.lup = 0;
       }
       
-      // 後方互換性：costExpansionsがない場合
       if (data.costExpansions === undefined) {
         data.costExpansions = 0;
       }
       
-      // 後方互換性：gachaStatsがない場合
       if (!data.gachaStats) {
         data.gachaStats = {
           totalPulls: 0,
@@ -72,7 +75,6 @@ export const loadPlayerData = () => {
         };
       }
       
-      // 後方互換性：luckがない場合
       if (!data.luck) {
         data.luck = {
           level: 1,
@@ -81,7 +83,6 @@ export const loadPlayerData = () => {
         };
       }
       
-      // 🆕 後方互換性：旧形式のデッキ（オブジェクト）を新形式（配列）に変換
       if (data.deck && !Array.isArray(data.deck)) {
         const newDeck = [];
         Object.keys(data.beetleUpgrades).forEach(id => {
@@ -90,7 +91,6 @@ export const loadPlayerData = () => {
         data.deck = newDeck;
       }
       
-      // 🆕 後方互換性：upgradesがない場合は追加
       if (data.beetleUpgrades) {
         Object.keys(data.beetleUpgrades).forEach(id => {
           if (!data.beetleUpgrades[id].upgrades) {
@@ -101,6 +101,14 @@ export const loadPlayerData = () => {
               carry: 0,
               speed: 0,
             };
+          }
+          
+          // 🆕 後方互換性：限界突破データがない場合は追加
+          if (data.beetleUpgrades[id].breakthroughLevel === undefined) {
+            data.beetleUpgrades[id].breakthroughLevel = 0;
+          }
+          if (data.beetleUpgrades[id].breakthroughStock === undefined) {
+            data.beetleUpgrades[id].breakthroughStock = 1; // 初期所持は1体
           }
         });
       }
@@ -148,7 +156,7 @@ export const spendSG = (playerData, amount) => {
 };
 
 /**
- * 🆕 LUPを追加（全体のLUPとして管理）
+ * LUPを追加（全体のLUPとして管理）
  */
 export const addLUP = (playerData, amount) => {
   playerData.lup = (playerData.lup || 0) + amount;
@@ -156,7 +164,7 @@ export const addLUP = (playerData, amount) => {
 };
 
 /**
- * 🆕 甲虫を強化
+ * 甲虫を強化
  */
 export const upgradeBeetle = (playerData, beetleId, stat) => {
   const beetle = playerData.beetleUpgrades[beetleId];
@@ -168,17 +176,14 @@ export const upgradeBeetle = (playerData, beetleId, stat) => {
   const baseData = beetleTypes[beetle.type];
   if (!baseData) return false;
   
-  // 現在値と上限値を計算
   const upgrades = beetle.upgrades || { hp: 0, atk: 0, def: 0, carry: 0, speed: 0 };
   const baseValue = baseData[stat];
   const currentUpgrade = upgrades[stat];
   const currentValue = baseValue * (1 + currentUpgrade * 0.1);
   const maxValue = calculateStatCap(baseValue, beetle.level);
   
-  // 上限チェック
   if (currentValue >= maxValue) return false;
   
-  // 強化実行
   playerData.sg -= cost;
   beetle.upgrades[stat] = currentUpgrade + 1;
   
@@ -187,7 +192,7 @@ export const upgradeBeetle = (playerData, beetleId, stat) => {
 };
 
 /**
- * 🆕 甲虫をレベルアップ
+ * 甲虫をレベルアップ
  */
 export const levelUpBeetle = (playerData, beetleId) => {
   const beetle = playerData.beetleUpgrades[beetleId];
@@ -196,12 +201,68 @@ export const levelUpBeetle = (playerData, beetleId) => {
   const cost = calculateLevelUpCost(beetle.level);
   if ((playerData.lup || 0) < cost) return false;
   
-  // レベルアップ実行
   playerData.lup -= cost;
   beetle.level += 1;
   
   savePlayerData(playerData);
   return true;
+};
+
+/**
+ * 🆕 限界突破を実行
+ */
+export const breakthroughBeetle = (playerData, beetleId) => {
+  const beetle = playerData.beetleUpgrades[beetleId];
+  if (!beetle) return false;
+  
+  const currentLevel = beetle.breakthroughLevel || 0;
+  const currentStock = beetle.breakthroughStock || 0;
+  
+  // 最大レベルチェック
+  if (currentLevel >= BREAKTHROUGH_CONFIG.MAX_LEVEL) {
+    return false;
+  }
+  
+  // 必要素材数チェック
+  const required = getNextBreakthroughRequired(currentLevel);
+  if (!required || currentStock < required) {
+    return false;
+  }
+  
+  // 限界突破実行
+  beetle.breakthroughLevel = currentLevel + 1;
+  
+  savePlayerData(playerData);
+  console.log(`🌟 限界突破成功: ${beetle.type} → ${currentLevel + 1}凸`);
+  return true;
+};
+
+/**
+ * 🆕 限界突破素材をストック（ガチャで被った時）
+ */
+export const addBreakthroughStock = (playerData, type) => {
+  // 同じタイプの甲虫を探す
+  let targetBeetle = null;
+  let targetId = null;
+  
+  Object.entries(playerData.beetleUpgrades).forEach(([id, beetle]) => {
+    if (beetle.type === type) {
+      // 最初に見つかった同タイプの甲虫にストック
+      if (!targetBeetle) {
+        targetBeetle = beetle;
+        targetId = id;
+      }
+    }
+  });
+  
+  if (targetBeetle) {
+    targetBeetle.breakthroughStock = (targetBeetle.breakthroughStock || 1) + 1;
+    savePlayerData(playerData);
+    console.log(`💎 限界突破素材+1: ${type} (現在: ${targetBeetle.breakthroughStock}体)`);
+    return { id: targetId, stock: targetBeetle.breakthroughStock };
+  }
+  
+  return null;
 };
 
 /**
@@ -263,10 +324,20 @@ export const addBeetleFromGacha = (playerData, type) => {
   const beetleData = beetleTypes[type];
   if (!beetleData) return null;
   
-  // 新しいIDを生成
+  // 🔥 変更：既に同タイプを所持している場合は、素材ストック+1
+  const existingBeetles = Object.entries(playerData.beetleUpgrades).filter(
+    ([id, beetle]) => beetle.type === type
+  );
+  
+  if (existingBeetles.length > 0) {
+    // 被り → 素材ストック
+    const result = addBreakthroughStock(playerData, type);
+    return result ? result.id : null;
+  }
+  
+  // 新規取得
   const newId = generateBeetleId(type, playerData.beetleUpgrades);
   
-  // 新しい甲虫を追加
   playerData.beetleUpgrades[newId] = {
     type,
     level: 1,
@@ -278,6 +349,8 @@ export const addBeetleFromGacha = (playerData, type) => {
       carry: 0,
       speed: 0,
     },
+    breakthroughLevel: 0,    // 🆕
+    breakthroughStock: 1,    // 🆕 初期所持は1体
   };
   
   savePlayerData(playerData);
@@ -328,26 +401,23 @@ export const calculateDeckCost = (deck, beetleUpgrades) => {
 };
 
 /**
- * 🆕 複数のキャラを売却
+ * 複数のキャラを売却
  */
 export const sellBeetles = (playerData, beetleIds) => {
   let soldCount = 0;
   let totalSG = 0;
   
   beetleIds.forEach(beetleId => {
-    // デッキに入っているキャラは売却不可
     if (playerData.deck.includes(beetleId)) return;
     
-    // 6段（幻）は売却不可
     const upgrade = playerData.beetleUpgrades[beetleId];
     if (upgrade) {
       const beetleData = beetleTypes[upgrade.type];
       if (beetleData && beetleData.rarity === 6) return;
       
-      // キャラを削除
       delete playerData.beetleUpgrades[beetleId];
       soldCount++;
-      totalSG += 100; // 1体100 SG
+      totalSG += 100;
     }
   });
   
@@ -361,7 +431,7 @@ export const sellBeetles = (playerData, beetleIds) => {
 };
 
 /**
- * 🆕 運の倍率を計算
+ * 運の倍率を計算
  */
 export const calculateLuckMultiplier = (luckData) => {
   if (!luckData) {
@@ -378,7 +448,7 @@ export const calculateLuckMultiplier = (luckData) => {
 };
 
 /**
- * 🆕 運レベルをアップグレード
+ * 運レベルをアップグレード
  */
 export const upgradeLuckLevel = (playerData) => {
   const currentLevel = playerData.luck?.level || 1;
@@ -396,7 +466,7 @@ export const upgradeLuckLevel = (playerData) => {
 };
 
 /**
- * 🆕 運ポイントを配分
+ * 運ポイントを配分
  */
 export const distributeLuckPoints = (playerData, gachaPoints, expPoints) => {
   if (gachaPoints + expPoints !== 100) return null;
@@ -406,4 +476,23 @@ export const distributeLuckPoints = (playerData, gachaPoints, expPoints) => {
   
   savePlayerData(playerData);
   return playerData;
+};
+/**
+ * 🆕 被り設定を保存
+ */
+export const setDuplicateMode = (playerData, type, mode) => {
+  if (!playerData.gachaDuplicateSettings) {
+    playerData.gachaDuplicateSettings = {};
+  }
+  
+  playerData.gachaDuplicateSettings[type] = mode;
+  savePlayerData(playerData);
+  return playerData;
+};
+
+/**
+ * 🆕 被り設定を取得
+ */
+export const getDuplicateMode = (playerData, type) => {
+  return playerData.gachaDuplicateSettings?.[type] || 'breakthrough';
 };

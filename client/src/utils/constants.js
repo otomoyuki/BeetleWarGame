@@ -142,90 +142,106 @@ export const DIFFICULTY_MODES = [
   { 
     id: 2, 
     name: '初級+', 
-    cpuBonus: 0.15,
-    reward: { win: 25, draw: 12, lose: 4 },
+    cpuBonus: 0.25,
+    reward: { win: 25, draw: 11, lose: 4 },
     lupMultiplier: 1.2,
     description: '少し強い'
   },
   { 
     id: 3, 
     name: '中級', 
-    cpuBonus: 0.35,
-    reward: { win: 30, draw: 15, lose: 4 },
+    cpuBonus: 0.5,
+    reward: { win: 30, draw: 12, lose: 4 },
     lupMultiplier: 1.5,
     description: '中程度'
   },
   { 
     id: 4, 
     name: '中級+', 
-    cpuBonus: 0.55,
-    reward: { win: 40, draw: 20, lose: 4 },
+    cpuBonus: 0.85,
+    reward: { win: 40, draw: 13, lose: 4 },
     lupMultiplier: 1.8,
     description: 'やや強い'
   },
   { 
     id: 5, 
     name: '上級', 
-    cpuBonus: 0.80,
-    reward: { win: 50, draw: 25, lose: 5 },
+    cpuBonus: 1.2,
+    reward: { win: 50, draw: 14, lose: 5 },
     lupMultiplier: 2.0,
     description: '上級者向け'
   },
   { 
     id: 6, 
     name: '上級+', 
-    cpuBonus: 1.10,
-    reward: { win: 60, draw: 30, lose: 5 },
+    cpuBonus: 1.8,
+    reward: { win: 60, draw: 15, lose: 5 },
     lupMultiplier: 2.5,
     description: 'かなり強い'
   },
   { 
     id: 7, 
     name: '鬼級', 
-    cpuBonus: 1.50,
-    reward: { win: 80, draw: 40, lose: 5 },
+    cpuBonus: 2.50,
+    reward: { win: 80, draw: 16, lose: 5 },
     lupMultiplier: 3.0,
     description: '鬼のような強さ'
   },
   { 
     id: 8, 
     name: '鬼級+', 
-    cpuBonus: 2.10,
-    reward: { win: 100, draw: 50, lose: 5 },
+    cpuBonus: 3.20,
+    reward: { win: 100, draw: 20, lose: 5 },
     lupMultiplier: 4.0,
     description: '超難関'
   },
   { 
     id: 9, 
     name: '悪魔級', 
-    cpuBonus: 2.80,
-    reward: { win: 150, draw: 70, lose: 5 },
+    cpuBonus: 4.0,
+    reward: { win: 150, draw: 25, lose: 5 },
     lupMultiplier: 5.0,
     description: '悪魔的難易度'
   },
   { 
     id: 10, 
     name: '地獄級', 
-    cpuBonus: 3.50,
-    reward: { win: 200, draw: 90, lose: 5 },
+    cpuBonus: 5.0,
+    reward: { win: 200, draw: 35, lose: 5 },
     lupMultiplier: 7.0,
     description: '地獄の難易度'
   },
   { 
     id: 11, 
     name: '白色矮星級', 
-    cpuBonus: 4.50,
-    reward: { win: 400, draw: 170, lose: 5 },
+    cpuBonus: 6.50,
+    reward: { win: 400, draw: 50, lose: 5 },
     lupMultiplier: 10.0,
     description: '地獄を超える難易度'
   },
   { 
     id: 12, 
     name: 'ブラックホール級', 
-    cpuBonus: 7.00,
-    reward: { win: 700, draw: 250, lose: 5 },
+    cpuBonus: 10.00,
+    reward: { win: 700, draw: 100, lose: 5 },
     lupMultiplier: 15.0,
     description: 'ブラックホールの難易度'
+  },
+    { 
+    id: 13, 
+    name: '銀河級', 
+    cpuBonus: 18.00,
+    reward: { win: 1000, draw: 200, lose: 5 },
+    lupMultiplier: 25.0,
+    description: '銀河の難易度'
+  },
+    { 
+    id: 14, 
+    name: '銀河団級', 
+    cpuBonus: 30.00,
+    reward: { win: 2000, draw: 250, lose: 5 },
+    lupMultiplier: 35.0,
+    description: '銀河団の難易度'
   }
 ];
 
@@ -367,3 +383,24 @@ export const GAME_SPEED_OPTIONS = [
   { speed: 2.0, cost: 3, label: '2倍速' },
   { speed: 3.0, cost: 5, label: '3倍速' },
 ];
+
+/**
+ * 🆕 ガチャ被り設定
+ */
+export const DUPLICATE_MODES = {
+  ADD: 'add',              // 新規追加
+  BREAKTHROUGH: 'breakthrough',  // 限界突破素材
+  SELL: 'sell',            // 自動売却
+};
+
+export const DUPLICATE_MODE_LABELS = {
+  [DUPLICATE_MODES.ADD]: '🆕 新規追加',
+  [DUPLICATE_MODES.BREAKTHROUGH]: '💎 限界突破素材',
+  [DUPLICATE_MODES.SELL]: '💰 自動売却',
+};
+
+export const DUPLICATE_MODE_DESCRIPTIONS = {
+  [DUPLICATE_MODES.ADD]: '新しいキャラとして追加',
+  [DUPLICATE_MODES.BREAKTHROUGH]: '既存キャラの素材+1',
+  [DUPLICATE_MODES.SELL]: '即座に100 SG獲得',
+};
